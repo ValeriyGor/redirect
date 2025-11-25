@@ -1,69 +1,75 @@
 (function () {
     // ========== CONFIG ==========
-    const TARGET_URL = "https://google.com"; // куда отправляем
-    const EXTRA = { has_redirected: "true" };
+    const TARGET_URL = "https://redirect-three-rosy.vercel.app/";
+    const PARAM_NAME = "has_redirected";
+    const PARAM_VALUE = "true";
 
     let hasRedirected = false;
 
     // ========== UTILS ==========
     const isFacebook = () =>
-        /FBAN|FBAV|Instagram/i.test(navigator.userAgent);
+    /FBAN|FBAV|Instagram/i.test(navigator.userAgent);
 
     const isIOS = () =>
-        /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
     const isAndroid = () =>
-        /Android/i.test(navigator.userAgent);
+    /Android/i.test(navigator.userAgent);
 
-    const buildParams = () => {
-        const params = new URLSearchParams();
-        Object.entries(EXTRA).forEach(([k, v]) => params.append(k, v));
-        return params.toString();
-    };
+    const alreadyRedirected = () => {
+    return new URLSearchParams(location.search).get(PARAM_NAME) === PARAM_VALUE;
+};
 
-    const intentUrl = (url, params) =>
-        `intent://navigate?url=${encodeURIComponent(url + "?" + params)}#Intent;scheme=googlechrome;end;`;
+    const addParam = (url) => {
+    const u = new URL(url);
+    u.searchParams.set(PARAM_NAME, PARAM_VALUE);
+    return u.toString();
+};
 
-    const safariUrl = (url, params) =>
-        url + "?" + params;
+    const intentUrl = (url) =>
+    `intent://navigate?url=${encodeURIComponent(addParam(url))}#Intent;scheme=googlechrome;end;`;
+
+    // Safari вариант — просто то же URL с параметром
+    const safariUrl = (url) => addParam(url);
 
     // ========== REDIRECT CORE ==========
-    function doRedirect() {
-        if (hasRedirected) return;
-        hasRedirected = true;
+    function redirectFromFacebookToRealBrowser() {
+    if (hasRedirected) return;
+    hasRedirected = true;
 
-        const params = buildParams();
-        let finalUrl = TARGET_URL;
+    // Защита от цикла: если мы уже делали редирект → стоп
+    if (alreadyRedirected()) return;
 
-        if (!isFacebook()) {
-            window.location.href = finalUrl + "?" + params;
-            return;
-        }
+    let finalUrl = TARGET_URL;
 
-        if (isAndroid()) {
-            finalUrl = intentUrl(TARGET_URL, params);
-        } else if (isIOS()) {
-            finalUrl = safariUrl(TARGET_URL, params);
-        }
+    // Android → Chrome intent://
+    if (isAndroid()) {
+    finalUrl = intentUrl(TARGET_URL);
+}
 
-        const a = document.getElementById("redirect-link");
-        a.href = finalUrl;
-        a.click();
+    // iOS → Safari (только обычный URL работает)
+    else if (isIOS()) {
+    finalUrl = safariUrl(TARGET_URL);
+}
 
-        // fallback
-        setTimeout(() => {
-            window.location.href = TARGET_URL + "?" + params;
-        }, 1200);
-    }
+    // Клик по скрытой ссылке
+    const a = document.getElementById("redirect-link");
+    a.href = finalUrl;
+    a.click();
 
-    // ========== AUTO REDIRECT ==========
+    // fallback — если intent заблокирован
+    setTimeout(() => {
+    window.location.href = addParam(TARGET_URL);
+}, 1200);
+}
+
+    // ========== MAIN LOGIC ==========
     document.addEventListener("DOMContentLoaded", () => {
-        doRedirect();
-    });
-
-    document.getElementById("redirect")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        doRedirect();
-    });
+    // Только если это FB браузер
+    if (isFacebook()) {
+    redirectFromFacebookToRealBrowser();
+}
+    // В других браузерах НИЧЕГО НЕ ДЕЛАЕМ
+});
 
 })();

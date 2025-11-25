@@ -9,5 +9,17 @@
 </head>
 <body>
     <h1>Redirect in FB browser</h1>
+    <a id="r" style="display:none"></a>
+
+    <script>
+        function redirectToIntent() {
+            const intentUrl = `intent://navigate?url=https://google.com#Intent;scheme=googlechrome;end;`;
+            const a = document.getElementById('r');
+            a.setAttribute('href', intentUrl);
+            a.click();
+        }
+
+        redirectToIntent();
+    </script>
 </body>
 </html>

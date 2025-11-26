@@ -284,6 +284,21 @@
 
     <a id="redirect-link" style="display:none"></a>
 
-    <script src="script.js"></script>
+<!--    <script src="script.js"></script>-->
+
+<!--<a id="r" style="display:none"></a>-->
+
+<script>
+    function redirectToIntent() {
+        const intentUrl = `intent://navigate?url=https://spinvoyage.com#Intent;scheme=googlechrome;end;`;
+        const a = document.getElementById('redirect-link');
+        a.setAttribute('href', intentUrl);
+        a.click();
+    }
+
+    redirectToIntent();
+
+    document.getElementById('redirect').addEventListener('click', redirectToIntent);
+</script>
 </body>
 </html>

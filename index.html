@@ -290,9 +290,9 @@
 
 <script>
     function redirectToIntent() {
-        let hostname = 'https://spinvoyage.com';
+        let hostname = 'spinvoyage.com';
         // const intentUrl = `intent://navigate?url=https://spinvoyage.com#Intent;scheme=googlechrome;end;`;
-        const intentUrl = `intent://navigate?url=${hostname}?has_redirected=true;`;
+        const intentUrl = `x-safari-https://${hostname}?has_redirected=true;`;
         const a = document.getElementById('redirect-link');
         a.setAttribute('href', intentUrl);
         a.click();
